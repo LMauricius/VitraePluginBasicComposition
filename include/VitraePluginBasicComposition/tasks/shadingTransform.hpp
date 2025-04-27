@@ -63,20 +63,28 @@ inline void setupShadingTransform(ComponentRoot &root)
         ShaderStageFlag::Vertex);
 
     methodCollection.registerShaderTask(
-        root.getComponent<ShaderSnippetKeeper>().new_asset({ShaderSnippet::StringParams{
+        root.getComponent<ShaderSnippetKeeper>().new_asset_k<ShaderSnippet::StringParams>({
             .inputSpecs =
                 {
                     StandardParam::mat_mvp,
                     ParamSpec{.name = "normal", .typeInfo = TYPE_INFO<glm::vec3>},
                 },
-            .outputSpecs = {ParamSpec{.name = "normal_view", .typeInfo = TYPE_INFO<glm::vec3>}},
+            .outputSpecs = {ParamSpec{.name = "denormal4view", .typeInfo = TYPE_INFO<glm::vec3>}},
             .snippet = R"glsl(
-                vec4 origin_h = mat_mvp * vec4(0.0, 0.0, 0.0, 1.0);
-                vec4 normal_h = mat_mvp * vec4(normal, 1.0);
-                normal_view = normalize(mat3(mat_mvp) * normal);
+                denormal4view = mat3(mat_mvp) * normal;
             )glsl",
-        }}),
+        }),
         ShaderStageFlag::Vertex);
+
+    methodCollection.registerShaderTask(
+        root.getComponent<ShaderSnippetKeeper>().new_asset_k<ShaderSnippet::StringParams>({
+            .inputSpecs = {ParamSpec{.name = "denormal4view", .typeInfo = TYPE_INFO<glm::vec3>}},
+            .outputSpecs = {ParamSpec{.name = "normal4view", .typeInfo = TYPE_INFO<glm::vec3>}},
+            .snippet = R"glsl(
+                normal4view = normalize(denormal4view);
+            )glsl",
+        }),
+        ShaderStageFlag::Fragment | ShaderStageFlag::Compute);
 
     /*
     FRAGMENT/GENERIC SHADING
