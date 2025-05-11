@@ -25,8 +25,9 @@ inline void setupDisplayCamera(ComponentRoot &root)
             .inputSpecs = {{
                 ParamSpec{.name = "scene", .typeInfo = TYPE_INFO<dynasma::FirmPtr<Scene>>},
                 ParamSpec{.name = "fs_shadow", .typeInfo = TYPE_INFO<dynasma::FirmPtr<FrameStore>>},
-                ParamSpec{
-                    .name = "shadow_distance", .typeInfo = TYPE_INFO<float>, .defaultValue = 100.0f},
+                ParamSpec{.name = "shadow_distance",
+                          .typeInfo = TYPE_INFO<float>,
+                          .defaultValue = 100.0f},
                 ParamSpec{
                     .name = "shadow_above", .typeInfo = TYPE_INFO<float>, .defaultValue = 80.0f},
                 ParamSpec{
@@ -34,7 +35,7 @@ inline void setupDisplayCamera(ComponentRoot &root)
             }},
             .outputSpecs = {{
                 ParamSpec{.name = "mat_shadow_view", .typeInfo = TYPE_INFO<glm::mat4>},
-                ParamSpec{.name = "mat_shadow_persp", .typeInfo = TYPE_INFO<glm::mat4>},
+                ParamSpec{.name = "mat_shadow_proj", .typeInfo = TYPE_INFO<glm::mat4>},
                 ParamSpec{.name = "light_direction", .typeInfo = TYPE_INFO<glm::vec3>},
                 ParamSpec{.name = "light_color_primary", .typeInfo = TYPE_INFO<glm::vec3>},
                 ParamSpec{.name = "light_color_ambient", .typeInfo = TYPE_INFO<glm::vec3>},
@@ -55,7 +56,7 @@ inline void setupDisplayCamera(ComponentRoot &root)
                             "mat_shadow_view",
                             p_scene->light.getViewMatrix(p_scene->camera, shadow_distance,
                                                          1.0 / p_shadowFrame->getSize().x));
-                        context.properties.set("mat_shadow_persp",
+                        context.properties.set("mat_shadow_proj",
                                                p_scene->light.getProjectionMatrix(
                                                    shadow_distance, shadow_above, shadow_below));
                         context.properties.set("light_direction",
@@ -74,39 +75,13 @@ inline void setupDisplayCamera(ComponentRoot &root)
     auto p_extractCameraProperties =
         dynasma::makeStandalone<ComposeFunction>(ComposeFunction::SetupParams{
             .inputSpecs = {{
-                ParamSpec{.name = "scene", .typeInfo = TYPE_INFO<dynasma::FirmPtr<Scene>>},
-            }},
-            .outputSpecs = {{
-                ParamSpec{.name = "mat_camera_view", .typeInfo = TYPE_INFO<glm::mat4>},
-                ParamSpec{.name = "camera_position", .typeInfo = TYPE_INFO<glm::vec3>},
-            }},
-            .p_function =
-                [](const RenderComposeContext &context) {
-                    try {
-                        auto p_scene =
-                            context.properties.get("scene").get<dynasma::FirmPtr<Scene>>();
-
-                        context.properties.set("mat_camera_view", p_scene->camera.getViewMatrix());
-                        context.properties.set("camera_position", p_scene->camera.position);
-                    }
-                    catch (const std::out_of_range &e) {
-                        throw;
-                    }
-                },
-            .friendlyName = "Camera properties",
-        });
-    methodCollection.registerComposeTask(p_extractCameraProperties);
-
-    // camera matrices extractor
-    auto p_extractCameraProjection =
-        dynasma::makeStandalone<ComposeFunction>(ComposeFunction::SetupParams{
-            .inputSpecs = {{
                 StandardParam::scene,
                 StandardParam::fs_target,
             }},
             .outputSpecs = {{
                 StandardParam::mat_proj,
-                StandardParam::mat_display,
+                StandardParam::mat_view,
+                ParamSpec{.name = "camera_position", .typeInfo = TYPE_INFO<glm::vec3>},
             }},
             .p_function =
                 [](const RenderComposeContext &context) {
@@ -116,20 +91,21 @@ inline void setupDisplayCamera(ComponentRoot &root)
                         auto p_windowFrame =
                             context.properties.get("fs_target").get<dynasma::FirmPtr<FrameStore>>();
 
-                        auto mat_camera_proj = p_scene->camera.getPerspectiveMatrix(
-                            p_windowFrame->getSize().x, p_windowFrame->getSize().y);
-
-                        context.properties.set(StandardParam::mat_proj.name, mat_camera_proj);
-                        context.properties.set(StandardParam::mat_display.name,
-                                               mat_camera_proj * p_scene->camera.getViewMatrix());
+                        context.properties.set(
+                            StandardParam::mat_proj.name,
+                            p_scene->camera.getPerspectiveMatrix(p_windowFrame->getSize().x,
+                                                                 p_windowFrame->getSize().y));
+                        context.properties.set(StandardParam::mat_view.name,
+                                               p_scene->camera.getViewMatrix());
+                        context.properties.set("camera_position", p_scene->camera.position);
                     }
                     catch (const std::out_of_range &e) {
                         throw;
                     }
                 },
-            .friendlyName = "Camera projection",
+            .friendlyName = "Camera properties",
         });
-    methodCollection.registerComposeTask(p_extractCameraProjection);
+    methodCollection.registerComposeTask(p_extractCameraProperties);
 
     auto p_renderAdaptor = dynasma::makeStandalone<ComposeAdaptTasks>(
         ComposeAdaptTasks::SetupParams{.root = root,
