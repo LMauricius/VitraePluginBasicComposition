@@ -42,21 +42,19 @@ inline void setupShadowCommon(ComponentRoot &root)
         dynasma::makeStandalone<ComposeFrameToTexture>(ComposeFrameToTexture::SetupParams{
             .root = root,
             .inputTokenNames = {"scene_silhouette_rendered"},
-            .outputs = {{
-                .textureName = "tex_shadow_adapted",
-                .shaderComponent = FixedRenderComponent::Depth,
-                .format = BufferFormat::DEPTH_STANDARD,
-                .clearColor = glm::vec4{1.0f, 1.0f, 1.0f, 1.0f},
-                .filtering =
-                    {
-                        .horWrap = WrappingType::BORDER_COLOR,
-                        .verWrap = WrappingType::BORDER_COLOR,
-                        .minFilter = FilterType::NEAREST,
-                        .magFilter = FilterType::NEAREST,
-                        .useMipMaps = false,
-                        .borderColor = {1.0f, 1.0f, 1.0f, 1.0f},
-                    },
-            }},
+            .textureName = "tex_shadow_adapted",
+            .shaderComponent = FixedRenderComponent::Depth,
+            .format = BufferFormat::DEPTH_STANDARD,
+            .clearColor = glm::vec4{1.0f, 1.0f, 1.0f, 1.0f},
+            .filtering =
+                {
+                    .horWrap = WrappingType::BORDER_COLOR,
+                    .verWrap = WrappingType::BORDER_COLOR,
+                    .minFilter = FilterType::NEAREST,
+                    .magFilter = FilterType::NEAREST,
+                    .useMipMaps = false,
+                    .borderColor = {1.0f, 1.0f, 1.0f, 1.0f},
+                },
             .size{String("ShadowMapSize"), {1024, 1024}},
         }));
 
