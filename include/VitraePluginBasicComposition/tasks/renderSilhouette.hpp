@@ -18,7 +18,6 @@ namespace VitraePluginBasicComposition
 
         auto p_clear = root.getComponent<ComposeClearRenderKeeper>().new_asset(
             {ComposeClearRender::SetupParams{.root = root,
-                                             .backgroundColor = glm::vec4(0.0f, 0.5f, 0.8f, 1.0f),
                                              .outputTokenNames = {"frame_cleared"}}});
         methodCollection.registerComposeTask(p_clear);
 
