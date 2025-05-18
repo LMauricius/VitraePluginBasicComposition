@@ -72,7 +72,7 @@ inline void setupDisplayCamera(ComponentRoot &root)
     methodCollection.registerComposeTask(p_extractLightProperties);
 
     // camera matrices extractor
-    auto p_extractCameraProperties =
+    auto p_extractCameraMatrices =
         dynasma::makeStandalone<ComposeFunction>(ComposeFunction::SetupParams{
             .inputSpecs = {{
                 StandardParam::scene,
@@ -81,7 +81,6 @@ inline void setupDisplayCamera(ComponentRoot &root)
             .outputSpecs = {{
                 StandardParam::mat_proj,
                 StandardParam::mat_view,
-                ParamSpec{.name = "camera_position", .typeInfo = TYPE_INFO<glm::vec3>},
             }},
             .p_function =
                 [](const RenderComposeContext &context) {
@@ -97,6 +96,31 @@ inline void setupDisplayCamera(ComponentRoot &root)
                                                                  p_windowFrame->getSize().y));
                         context.properties.set(StandardParam::mat_view.name,
                                                p_scene->camera.getViewMatrix());
+                    }
+                    catch (const std::out_of_range &e) {
+                        throw;
+                    }
+                },
+            .friendlyName = "Camera matrices",
+        });
+    methodCollection.registerComposeTask(p_extractCameraMatrices);
+
+    // camera properties extractor
+    auto p_extractCameraProperties =
+        dynasma::makeStandalone<ComposeFunction>(ComposeFunction::SetupParams{
+            .inputSpecs = {{
+                StandardParam::scene,
+                StandardParam::fs_target,
+            }},
+            .outputSpecs = {{
+                ParamSpec{.name = "camera_position", .typeInfo = TYPE_INFO<glm::vec3>},
+            }},
+            .p_function =
+                [](const RenderComposeContext &context) {
+                    try {
+                        auto p_scene =
+                            context.properties.get("scene").get<dynasma::FirmPtr<Scene>>();
+
                         context.properties.set("camera_position", p_scene->camera.position);
                     }
                     catch (const std::out_of_range &e) {
