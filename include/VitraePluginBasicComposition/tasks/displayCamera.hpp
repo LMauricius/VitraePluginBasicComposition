@@ -79,6 +79,7 @@ inline void setupDisplayCamera(ComponentRoot &root)
                 StandardParam::fs_target,
             }},
             .outputSpecs = {{
+                {"target_resolution", TYPE_INFO<glm::uvec2>},
                 StandardParam::mat_proj,
                 StandardParam::mat_view,
             }},
@@ -90,6 +91,7 @@ inline void setupDisplayCamera(ComponentRoot &root)
                         auto p_windowFrame =
                             context.properties.get("fs_target").get<dynasma::FirmPtr<FrameStore>>();
 
+                        context.properties.set("target_resolution", p_windowFrame->getSize());
                         context.properties.set(
                             StandardParam::mat_proj.name,
                             p_scene->camera.getPerspectiveMatrix(p_windowFrame->getSize().x,
@@ -114,6 +116,7 @@ inline void setupDisplayCamera(ComponentRoot &root)
             }},
             .outputSpecs = {{
                 ParamSpec{.name = "camera_position", .typeInfo = TYPE_INFO<glm::vec3>},
+                ParamSpec{.name = "camera_direction", .typeInfo = TYPE_INFO<glm::vec3>},
             }},
             .p_function =
                 [](const RenderComposeContext &context) {
@@ -122,6 +125,8 @@ inline void setupDisplayCamera(ComponentRoot &root)
                             context.properties.get("scene").get<dynasma::FirmPtr<Scene>>();
 
                         context.properties.set("camera_position", p_scene->camera.position);
+                        context.properties.set("camera_direction", p_scene->camera.rotation *
+                                                                       glm::vec3{0.0f, 0.0f, 1.0f});
                     }
                     catch (const std::out_of_range &e) {
                         throw;
