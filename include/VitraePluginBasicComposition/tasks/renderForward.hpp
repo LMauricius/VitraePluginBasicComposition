@@ -1,14 +1,15 @@
 #pragma once
 
-#include "Vitrae/Assets/Model.hpp"
 #include "Vitrae/Assets/FrameStore.hpp"
 #include "Vitrae/Assets/Material.hpp"
+#include "Vitrae/Assets/Model.hpp"
 #include "Vitrae/Assets/Texture.hpp"
-#include "Vitrae/Pipelines/Compositing/ClearRender.hpp"
-#include "Vitrae/Pipelines/Compositing/SceneRender.hpp"
 #include "Vitrae/Collections/ComponentRoot.hpp"
 #include "Vitrae/Collections/MethodCollection.hpp"
+#include "Vitrae/Data/Blending.hpp"
 #include "Vitrae/Params/Purposes.hpp"
+#include "Vitrae/Pipelines/Compositing/ClearRender.hpp"
+#include "Vitrae/Pipelines/Compositing/SceneRender.hpp"
 
 #include "dynasma/standalone.hpp"
 
@@ -68,19 +69,18 @@ namespace VitraePluginBasicComposition
         auto p_forwardRenderTransparent = root.getComponent<ComposeSceneRenderKeeper>().new_asset(
             {ComposeSceneRender::SetupParams{
                 .root = root,
-                .inputTokenNames = {"scene_forward_rendered_opaque"},
-                .outputTokenNames = {"scene_forward_rendered"},
-                .rasterizing = {
+                .inputTokenNames{"scene_forward_rendered_opaque"},
+                .outputTokenNames{"scene_forward_rendered"},
+                .rasterizing{
                     .vertexPositionOutputPropertyName = "position_view",
                     .modelFormPurpose = Purposes::visual,
-                    .sourceBlending = BlendingFunction::SourceAlpha,
-                    .destinationBlending = BlendingFunction::OneMinusSourceAlpha,
                     .rasterizingMode = RasterizingMode::DerivationalFillCenters,
+                    .blending = BlendingCommon::Alpha,
                     .writeDepth = false,
                 },
-                .ordering = {
-                    .generateFilterAndSort = [](const Scene &scene, const RenderComposeContext &ctx) -> std::pair<ComposeSceneRender::FilterFunc, ComposeSceneRender::SortFunc>
-                    {
+                .ordering{
+                    .generateFilterAndSort = [](const Scene &scene, const RenderComposeContext &ctx)
+                        -> std::pair<ComposeSceneRender::FilterFunc, ComposeSceneRender::SortFunc> {
                         glm::vec3 camPos = scene.camera.position;
 
                         return {
