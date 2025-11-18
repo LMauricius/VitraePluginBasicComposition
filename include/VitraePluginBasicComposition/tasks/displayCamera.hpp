@@ -3,6 +3,8 @@
 #include "Vitrae/Assets/FrameStore.hpp"
 #include "Vitrae/Collections/ComponentRoot.hpp"
 #include "Vitrae/Collections/MethodCollection.hpp"
+#include "Vitrae/Params/Attribute.hpp"
+#include "Vitrae/Params/Attribute/Default.hpp"
 #include "Vitrae/Params/Standard.hpp"
 #include "Vitrae/Pipelines/Compositing/AdaptTasks.hpp"
 #include "Vitrae/Pipelines/Compositing/ClearRender.hpp"
@@ -22,17 +24,21 @@ inline void setupDisplayCamera(ComponentRoot &root)
     // shadow matrices extractor
     auto p_extractLightProperties =
         dynasma::makeStandalone<ComposeFunction>(ComposeFunction::SetupParams{
-            .inputSpecs = {{
+            .inputSpecs{
                 ParamSpec{.name = "scene", .typeInfo = TYPE_INFO<dynasma::FirmPtr<Scene>>},
                 ParamSpec{.name = "fs_shadow", .typeInfo = TYPE_INFO<dynasma::FirmPtr<FrameStore>>},
-                ParamSpec{.name = "shadow_distance",
+                ParamSpec{
+                    .name = "shadow_distance",
+                    .typeInfo = TYPE_INFO<float>,
+                    .attributes = DefaultValue{100.0f},
+                },
+                ParamSpec{.name = "shadow_above",
                           .typeInfo = TYPE_INFO<float>,
-                          .defaultValue = 100.0f},
-                ParamSpec{
-                    .name = "shadow_above", .typeInfo = TYPE_INFO<float>, .defaultValue = 80.0f},
-                ParamSpec{
-                    .name = "shadow_below", .typeInfo = TYPE_INFO<float>, .defaultValue = 80.0f},
-            }},
+                          .attributes = DefaultValue{80.0f}},
+                ParamSpec{.name = "shadow_below",
+                          .typeInfo = TYPE_INFO<float>,
+                          .attributes = DefaultValue{80.0f}},
+            },
             .outputSpecs = {{
                 ParamSpec{.name = "mat_shadow_view", .typeInfo = TYPE_INFO<glm::mat4>},
                 ParamSpec{.name = "mat_shadow_proj", .typeInfo = TYPE_INFO<glm::mat4>},

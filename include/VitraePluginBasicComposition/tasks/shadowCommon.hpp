@@ -3,10 +3,12 @@
 #include "Vitrae/Assets/FrameStore.hpp"
 #include "Vitrae/Collections/ComponentRoot.hpp"
 #include "Vitrae/Collections/MethodCollection.hpp"
+#include "Vitrae/Data/BufferFormat.hpp"
 #include "Vitrae/Pipelines/Compositing/AdaptTasks.hpp"
 #include "Vitrae/Pipelines/Compositing/ClearRender.hpp"
 #include "Vitrae/Pipelines/Compositing/FrameToTexture.hpp"
 #include "Vitrae/Pipelines/Compositing/SceneRender.hpp"
+#include "Vitrae/Pipelines/Shading/Snippet.hpp"
 
 #include "dynasma/standalone.hpp"
 
@@ -38,14 +40,11 @@ inline void setupShadowCommon(ComponentRoot &root)
         }}),
         ShaderStageFlag::Vertex | ShaderStageFlag::Compute);
 
-    methodCollection.registerComposeTask(
-        dynasma::makeStandalone<ComposeFrameToTexture>(ComposeFrameToTexture::SetupParams{
+    methodCollection.registerComposeTask(dynasma::makeStandalone<ComposeFrameToTexture>(
+        ComposeFrameToTexture::SetupParams<Vitrae::BufferType::DEPTH>{
             .root = root,
-            .inputTokenNames = {"scene_silhouette_rendered"},
-            .textureName = "tex_shadow_adapted",
-            .shaderComponent = FixedRenderComponent::Depth,
-            .format = BufferFormat::DEPTH_STANDARD,
-            .clearColor = glm::vec4{1.0f, 1.0f, 1.0f, 1.0f},
+            .size{String("ShadowMapSize"), {1024, 1024}},
+            .storageFormat = BufferFormat_DEPTH::NORM24,
             .filtering =
                 {
                     .horWrap = WrappingType::BORDER_COLOR,
@@ -53,9 +52,10 @@ inline void setupShadowCommon(ComponentRoot &root)
                     .minFilter = FilterType::NEAREST,
                     .magFilter = FilterType::NEAREST,
                     .useMipMaps = false,
-                    .borderColor = {1.0f, 1.0f, 1.0f, 1.0f},
+                    .borderColor = glm::vec4{1.0f, 1.0f, 1.0f, 1.0f},
                 },
-            .size{String("ShadowMapSize"), {1024, 1024}},
+            .textureName = "tex_shadow_adapted",
+            .inputTokenNames = {"scene_silhouette_rendered"},
         }));
 
     methodCollection.registerComposeTask(
