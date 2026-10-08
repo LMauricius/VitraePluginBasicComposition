@@ -21,7 +21,7 @@ namespace VitraePluginBasicComposition
         if (auto it_tex_diffuse = matProperties.find("tex_diffuse"); it_tex_diffuse != matProperties.end())
         {
             auto p_tex_diffuse =
-                (*it_tex_diffuse).second.get<dynasma::FirmPtr<Texture2D<BufferType::REAL_VEC4>>>();
+                (*it_tex_diffuse).second.get<dynasma::FirmPtr<Texture2D<PixelType::REAL_VEC4>>>();
 
             if (p_tex_diffuse->getProperties()
                     .get(Vitrae::StandardParam::is_transparent.name, false)

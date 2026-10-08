@@ -3,7 +3,7 @@
 #include "Vitrae/Assets/FrameStore.hpp"
 #include "Vitrae/Collections/ComponentRoot.hpp"
 #include "Vitrae/Collections/MethodCollection.hpp"
-#include "Vitrae/Data/BufferFormat.hpp"
+#include "Vitrae/Data/PixelTyping.hpp"
 #include "Vitrae/Pipelines/Compositing/AdaptTasks.hpp"
 #include "Vitrae/Pipelines/Compositing/ClearRender.hpp"
 #include "Vitrae/Pipelines/Compositing/FrameToTexture.hpp"
@@ -41,10 +41,10 @@ inline void setupShadowCommon(ComponentRoot &root)
         ShaderStageFlag::Vertex | ShaderStageFlag::Compute);
 
     methodCollection.registerComposeTask(dynasma::makeStandalone<ComposeFrameToTexture>(
-        ComposeFrameToTexture::SetupParams<Vitrae::BufferType::DEPTH>{
+        ComposeFrameToTexture::SetupParams<Vitrae::PixelType::DEPTH>{
             .root = root,
             .size{String("ShadowMapSize"), {1024, 1024}},
-            .storageFormat = BufferFormat_DEPTH::NORM24,
+            .storageFormat = PixelFormat_DEPTH::NORM24,
             .filtering =
                 {
                     .horWrap = WrappingType::BORDER_COLOR,
@@ -73,7 +73,7 @@ inline void setupShadowCommon(ComponentRoot &root)
                 {
                     {
                         "tex_shadow",
-                        TYPE_INFO<dynasma::FirmPtr<Texture>>,
+                        TYPE_INFO<dynasma::FirmPtr<Texture2D<PixelType::DEPTH>>>,
                     },
                 },
             .friendlyName = "Render shadows",
